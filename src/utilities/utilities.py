@@ -198,16 +198,12 @@ def send_dealer_email(
         else "Mismatch"
     )
 
-    # Create the summary DataFrame
+    # Create the summary List - Navigation
     summary_data = [
         ("<a href='#nav_prices'>NAVIGATION MENU PRICES</a>", nav_match_status)
     ]
 
-    if not all_model_images_df.empty:
-        summary_data.append(
-            ("<a href='#hero_images'>MODEL HERO IMAGES</a>", img_match_status)
-        )
-
+    # Appending the summary List - Vehicles
     for vehicle_name, vehicle_df, _, _ in vehicles_list_html:
 
         # Create anchor tag for each vehicle_name
@@ -220,6 +216,13 @@ def send_dealer_email(
         )
         summary_data.append((vehicle_link, comparison))
 
+    # Appending the summary List - Images
+    if not all_model_images_df.empty:
+        summary_data.append(
+            ("<a href='#hero_images'>MODEL HERO IMAGES</a>", img_match_status)
+        )
+
+    # Create the summary DataFrame
     summary_df = pd.DataFrame(summary_data, columns=["Section", "Comparison Result"])
 
     # Determine email subject prepend
@@ -279,14 +282,12 @@ def send_dealer_email(
         <h2><a id="nav_prices" name="nav_prices">NAVIGATION MENU PRICES</a></h2>
         Data Sources:
         <ul>
-          <li>{const["MAIN_NAVIGATION_MENU_MANUFACTURER_URL"]}</li>
-          <li>{const["MAIN_NAVIGATION_MENU_DEALER_URL"]}</li>
+          <li><a href="{const["MAIN_NAVIGATION_MENU_MANUFACTURER_URL"]}" target="_blank">{const["MAIN_NAVIGATION_MENU_MANUFACTURER_URL"]}</a></li>
+          <li><a href="{const["MAIN_NAVIGATION_MENU_DEALER_URL"]}" target="_blank">{const["MAIN_NAVIGATION_MENU_DEALER_URL"]}</a></li>
         </ul>
         {nav_prices_df.to_html(classes='table', escape=False, index=False, formatters={'Price Comparison': redden})}
         <br>
-        <a href='#summary'>Back to Summary</a>
-        <br>
-        <br>
+        <div style='text-align: right;'><a href='#summary'>Back to Summary</a></div>
     """
 
     # Loop through each vehicle and add corresponding HTML sections
@@ -298,14 +299,12 @@ def send_dealer_email(
         <h2><a id='{vehicle_id}' name='{vehicle_id}'>{vehicle_name} PRICES</a></h2>
         Data Sources:
         <ul>
-          <li>{manufacturer_url}</li>
-          <li>{dealer_url}</li>
+          <li><a href="{manufacturer_url}" target="_blank">{manufacturer_url}</a></li>
+          <li><a href="{dealer_url}" target="_blank">{dealer_url}</a></li>
         </ul>
         {vehicle_df.to_html(classes='table', escape=False, index=False, formatters={'Price Comparison': redden})}
         <br>
-        <a href='#summary'>Back to Summary</a>
-        <br>
-        <br>
+        <div style='text-align: right;'><a href='#summary'>Back to Summary</a></div>
         """
 
     if not all_model_images_df.empty:
@@ -317,7 +316,7 @@ def send_dealer_email(
             <p>The comparisons are done based on filename and not the actual image presented.</p>
             {all_model_images_df.to_html(classes='table', escape=False, index=False, formatters={'Image Comparison': redden})}
             <br>
-            <a href='#summary'>Back to Summary</a>
+            <div style='text-align: right;'><a href='#summary'>Back to Summary</a></div>
         </body>
         </html>
         """
