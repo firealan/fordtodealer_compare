@@ -1,0 +1,183 @@
+name: Build and Deploy to ACI
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  IMAGE_NAME: ford-web-scrapper
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v1
+      with:
+        registry: ghcr.io
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v2
+      with:
+        context: .
+        push: true
+        tags: ghcr.io/${{ github.repository }}/${{ env.IMAGE_NAME }}:${{ github.run_number }}
+
+  deploy_dev:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: Development
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v1
+      with:
+        registry: ghcr.io
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Login to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Check if Azure Container Instance exists
+      id: check_container
+      run: |
+        result=$(az container show --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} --name ${{ vars.AZURE_CONTAINER_INSTANCE_GROUP }} --query "name" -o tsv 2>/dev/null || echo "")
+        echo "container_exists=$(test -z "$result" && echo false || echo true)" >> "$GITHUB_OUTPUT"
+  
+    - name: Output container_exists
+      run: |
+        echo "Container exists: ${{ steps.check_container.outputs.container_exists }}"
+
+    - name: Delete Azure Container Instance
+      id: delete_container  
+      if: steps.check_container.outputs.container_exists == 'true'
+      run: |
+        az container delete --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} --name ${{ vars.AZURE_CONTAINER_INSTANCE_GROUP }} --yes && echo "container_exists=false" >> "$GITHUB_OUTPUT"
+
+    - name: Output container_exists
+      run: |
+       echo "Container exists: ${{ steps.delete_container.outputs.container_exists }}"        
+
+    - name: Generate container config file
+      run: |
+        chmod +x generate-container-config.sh
+        GITHUB_TOKEN="${{ secrets.FIREFOX_GITHUB_TOKEN }}" EMAIL_PASSWORD="${{ secrets.EMAIL_PASSWORD }}" ./generate-container-config.sh "${{ vars.AZURE_CONTAINER_INSTANCE_GROUP }}" "ghcr.io/${{ github.repository }}/${{ env.IMAGE_NAME }}:${{ github.run_number }}" "${{ vars.EMAIL_ERROR_RECIEVER }}" "${{ vars.EMAIL_ERROR_SUBJECT }}" "${{ vars.EMAIL_SUBJECT }}" "${{ vars.EMAIL_RECIEVER }}" "${{ vars.EMAIL_SENDER }}" "${{ vars.EMAIL_BCC }}"
+  
+    - name: Deploy to Azure Container Instances (ACI) - Dev
+      if: steps.check_container.outputs.container_exists == 'false' || steps.delete_container.outputs.container_exists == 'false'
+      run: |
+        az container create --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} --name ${{ vars.AZURE_CONTAINER_INSTANCE_GROUP }}  --file container-config.yaml
+
+  deploy_staging:
+    needs: deploy_dev
+    runs-on: ubuntu-latest
+    environment: Staging
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+  
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+  
+      - name: Check if Azure Container Instance exists
+        id: check_container
+        run: |
+          result=$(az container show --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} --name ${{ vars.AZURE_CONTAINER_INSTANCE_GROUP }} --query "name" -o tsv 2>/dev/null || echo "")
+          echo "container_exists=$(test -z "$result" && echo false || echo true)" >> "$GITHUB_OUTPUT"
+    
+      - name: Output container_exists
+        run: |
+          echo "Container exists: ${{ steps.check_container.outputs.container_exists }}"
+  
+      - name: Delete Azure Container Instance
+        id: delete_container  
+        if: steps.check_container.outputs.container_exists == 'true'
+        run: |
+          az container delete --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} --name ${{ vars.AZURE_CONTAINER_INSTANCE_GROUP }} --yes && echo "container_exists=false" >> "$GITHUB_OUTPUT"
+  
+      - name: Output container_exists
+        run: |
+         echo "Container exists: ${{ steps.delete_container.outputs.container_exists }}"        
+  
+      - name: Generate container config file
+        run: |
+          chmod +x generate-container-config.sh
+          GITHUB_TOKEN="${{ secrets.FIREFOX_GITHUB_TOKEN }}" EMAIL_PASSWORD="${{ secrets.EMAIL_PASSWORD }}" ./generate-container-config.sh "${{ vars.AZURE_CONTAINER_INSTANCE_GROUP }}" "ghcr.io/${{ github.repository }}/${{ env.IMAGE_NAME }}:${{ github.run_number }}" "${{ vars.EMAIL_ERROR_RECIEVER }}" "${{ vars.EMAIL_ERROR_SUBJECT }}" "${{ vars.EMAIL_SUBJECT }}" "${{ vars.EMAIL_RECIEVER }}" "${{ vars.EMAIL_SENDER }}" "${{ vars.EMAIL_BCC }}"
+    
+      - name: Deploy to Azure Container Instances (ACI) - Staging
+        if: steps.check_container.outputs.container_exists == 'false' || steps.delete_container.outputs.container_exists == 'false'
+        run: |
+          az container create --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} --name ${{ vars.AZURE_CONTAINER_INSTANCE_GROUP }}  --file container-config.yaml
+
+  deploy_prod:
+    needs: deploy_staging
+    runs-on: ubuntu-latest
+    environment: Production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Check if Azure Container Instance exists
+        id: check_container
+        run: |
+          result=$(az container show --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} --name ${{ vars.AZURE_CONTAINER_INSTANCE_GROUP }} --query "name" -o tsv 2>/dev/null || echo "")
+          echo "container_exists=$(test -z "$result" && echo false || echo true)" >> "$GITHUB_OUTPUT"
+    
+      - name: Output container_exists
+        run: |
+          echo "Container exists: ${{ steps.check_container.outputs.container_exists }}"
+
+      - name: Delete Azure Container Instance
+        id: delete_container  
+        if: steps.check_container.outputs.container_exists == 'true'
+        run: |
+          az container delete --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} --name ${{ vars.AZURE_CONTAINER_INSTANCE_GROUP }} --yes && echo "container_exists=false" >> "$GITHUB_OUTPUT"
+
+      - name: Output container_exists
+        run: |
+          echo "Container exists: ${{ steps.delete_container.outputs.container_exists }}"        
+
+      - name: Generate container config file
+        run: |
+          chmod +x generate-container-config.sh
+          GITHUB_TOKEN="${{ secrets.FIREFOX_GITHUB_TOKEN }}" EMAIL_PASSWORD="${{ secrets.EMAIL_PASSWORD }}" ./generate-container-config.sh "${{ vars.AZURE_CONTAINER_INSTANCE_GROUP }}" "ghcr.io/${{ github.repository }}/${{ env.IMAGE_NAME }}:${{ github.run_number }}" "${{ vars.EMAIL_ERROR_RECIEVER }}" "${{ vars.EMAIL_ERROR_SUBJECT }}" "${{ vars.EMAIL_SUBJECT }}" "${{ vars.EMAIL_RECIEVER }}" "${{ vars.EMAIL_SENDER }}" "${{ vars.EMAIL_BCC }}"
+    
+      - name: Deploy to Azure Container Instances (ACI) - Production
+        if: steps.check_container.outputs.container_exists == 'false' || steps.delete_container.outputs.container_exists == 'false'
+        run: |
+          az container create --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} --name ${{ vars.AZURE_CONTAINER_INSTANCE_GROUP }}  --file container-config.yaml
