@@ -15,6 +15,7 @@ constants = {
     # ----------------------------------------------------------------
     "NAVIGATION_SKIP_FLAG": False,
     "NAVIGATION_MODEL_LIST": ["BRONCO SPORT", "EDGE", "ESCAPE", "F-150", "MUSTANG"],
+    "NAVIGATION_CATEGORY_LIST": ["Electrified"],
     "MAIN_NAVIGATION_MENU_MANUFACTURER_URL": "https://www.ford.ca",
     "MAIN_NAVIGATION_MENU_DEALER_URL": "https://fordtodealers.ca",
     # ----------------------------------------------------------------

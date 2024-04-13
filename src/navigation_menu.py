@@ -222,7 +222,7 @@ def create_navigation_prices_df(mfr_url: str, dealer_url: str) -> pd.DataFrame:
     )
 
     # Add a temporary 'order' column to mfr_df
-    nav_mfr_prices_df['order'] = range(len(nav_mfr_prices_df))
+    nav_mfr_prices_df["order"] = range(len(nav_mfr_prices_df))
 
     # Merge datasets on 'Car Model'
     merged_df = pd.merge(
@@ -234,8 +234,8 @@ def create_navigation_prices_df(mfr_url: str, dealer_url: str) -> pd.DataFrame:
     )
 
     # Sort by the 'order' column and drop it
-    merged_df.sort_values('order', inplace=True)
-    merged_df.drop('order', axis=1, inplace=True)
+    merged_df.sort_values("order", inplace=True)
+    merged_df.drop("order", axis=1, inplace=True)
 
     # Replace NaN values with $0
     merged_df.fillna("$0", inplace=True)
@@ -261,9 +261,17 @@ def create_navigation_prices_df(mfr_url: str, dealer_url: str) -> pd.DataFrame:
         "Price Comparison",
     ] = "Mismatch"
 
-    # Filter Navigation List if needed - Reducing the list
+    # Filter Navigation List by Car Model if needed - Reducing the list
     if const.get("NAVIGATION_MODEL_LIST", []):
-        merged_df = merged_df[merged_df["Car Model"].isin(const["NAVIGATION_MODEL_LIST"])]
+        merged_df = merged_df[
+            merged_df["Car Model"].isin(const["NAVIGATION_MODEL_LIST"])
+        ]
+
+    # Filter Navigation List by Car Category if needed - Reducing the list
+    if const.get("NAVIGATION_CATEGORY_LIST", []):
+        merged_df = merged_df[
+            ~merged_df["Category"].isin(const["NAVIGATION_CATEGORY_LIST"])
+        ]
 
     return merged_df
 
@@ -274,7 +282,8 @@ if __name__ == "__main__":
     print(get_ford_dealer_nav_prices(const["MAIN_NAVIGATION_MENU_DEALER_URL"]))
     print(
         create_navigation_prices_df(
-            const["MAIN_NAVIGATION_MENU_MANUFACTURER_URL"], const["MAIN_NAVIGATION_MENU_DEALER_URL"]
+            const["MAIN_NAVIGATION_MENU_MANUFACTURER_URL"],
+            const["MAIN_NAVIGATION_MENU_DEALER_URL"],
         )
     )
 
