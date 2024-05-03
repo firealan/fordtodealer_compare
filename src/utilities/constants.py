@@ -14,8 +14,15 @@ constants = {
     # Navigation Configuration
     # ----------------------------------------------------------------
     "NAVIGATION_SKIP_FLAG": False,
-    "NAVIGATION_MODEL_LIST": ["BRONCO SPORT", "EDGE", "ESCAPE", "F-150", "MUSTANG"],
-    "NAVIGATION_CATEGORY_LIST": ["Electrified"],
+    "NAVIGATION_MODEL_LIST": [
+        "BRONCO SPORT",
+        "EDGE",
+        "ESCAPE",
+        "EXPLORER",
+        "F-150",
+        "MUSTANG",
+    ],
+    "NAVIGATION_CATEGORY_LIST": [],
     "MAIN_NAVIGATION_MENU_MANUFACTURER_URL": "https://www.ford.ca",
     "MAIN_NAVIGATION_MENU_DEALER_URL": "https://fordtodealers.ca",
     # ----------------------------------------------------------------
@@ -66,11 +73,11 @@ constants = {
     "EXPEDITION_MANUFACTURER_IMAGE_URL": "https://www.ford.ca/suvs/expedition/?gnav=header-suvs-vhp",
     "EXPEDITION_DEALER_URL": "https://fordtodealers.ca/ford-expedition/",
     "EXPEDITION_DEALER_IMAGE_URL": "https://fordtodealers.ca/ford-expedition/",
-    "EXPLORER_SKIP_FLAG": True,
+    "EXPLORER_SKIP_FLAG": False,
     "EXPLORER_MANUFACTURER_URL": "https://www.ford.ca/suvs/explorer/?gnav=header-suvs-vhp",
     "EXPLORER_MANUFACTURER_IMAGE_URL": "https://www.ford.ca/suvs/explorer/?gnav=header-suvs-vhp",
-    "EXPLORER_DEALER_URL": "https://fordtodealers.ca/ford-explorer/",
-    "EXPLORER_DEALER_IMAGE_URL": "https://fordtodealers.ca/ford-explorer/",
+    "EXPLORER_DEALER_URL": "https://fordtodealers.ca/2024-ford-explorer/",
+    "EXPLORER_DEALER_IMAGE_URL": "https://fordtodealers.ca/2024-ford-explorer/",
     "F_SERIES_STRIPPED_CHASSIS_SKIP_FLAG": True,
     "F_SERIES_STRIPPED_CHASSIS_MANUFACTURER_URL": "https://www.ford.ca/commercial-trucks/f-series-stripped-chassis/models/?gnav=vhpnav-specs",
     "F_SERIES_STRIPPED_CHASSIS_MANUFACTURER_IMAGE_URL": "https://www.ford.ca/commercial-trucks/f-series-stripped-chassis/?gnav=header-commercial-vhp",
