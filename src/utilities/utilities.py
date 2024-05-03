@@ -128,6 +128,7 @@ def create_vehicle_prices_df(
 
 # ------------------------------------------
 # Create Model-Image data frame
+# - Compare the image filenames
 # ------------------------------------------
 def create_vehicle_image_df(
     hero_image_func_mfr: Callable[[str], str],
@@ -156,9 +157,15 @@ def create_vehicle_image_df(
 
     # Add a column for price comparison
     hero_image_df["Image Comparison"] = "Match"
+
+    # Compare filenames without extensions
     hero_image_df.loc[
-        hero_image_df["Ford Manufacturer Image Filename"]
-        != hero_image_df["Ford Dealer Image Filename"],
+        hero_image_df["Ford Manufacturer Image Filename"].apply(
+            lambda x: x.split(".", 1)[0]
+        )
+        != hero_image_df["Ford Dealer Image Filename"].apply(
+            lambda x: x.split(".", 1)[0]
+        ),
         "Image Comparison",
     ] = "Mismatch"
 
@@ -313,7 +320,7 @@ def send_dealer_email(
             <br>
             <hr>
             <h2><a id="hero_images" name="hero_images">MODEL HERO IMAGES</a></h2>
-            <p>The comparisons are done based on filename and not the actual image presented.</p>
+            <p>The comparisons are done based on the base filename (ignoring file extensions) and not the actual image presented.</p>
             {all_model_images_df.to_html(classes='table', escape=False, index=False, formatters={'Image Comparison': redden})}
             <br>
             <div style='text-align: right;'><a href='#summary'>Back to Summary</a></div>
