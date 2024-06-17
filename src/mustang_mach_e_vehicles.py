@@ -40,49 +40,26 @@ def get_ford_mfg_mustang_mach_e_prices(url: str) -> List[Tuple[str, str]]:
     vehicle_prices = []
 
     try:
-        # Get all the buttons to scroll through the vehicle models
-        buttons = driver.find_elements(
-            By.XPATH,
-            "(//ol[@class='bds-carousel-indicators global-indicators to-fade-in  scrollable'])/li",
-        )  # Stop at the first ol instance
+        # Extract vehicle models and prices
+        model_elements = driver.find_elements(
+            By.XPATH, "//*[@class='bri-txt generic-title-one ff-b']"
+        )
+        price_elements = driver.find_elements(
+            By.XPATH, '//*[@class="bri-txt body-one ff-b"]'
+        )
 
-        if not buttons:
+        # Check if model or price elements are not found
+        if not model_elements or not price_elements:
             raise Exception(
-                "Scrolling buttons not found. Page structure may have changed."
+                "Model or price elements not found. Page structure may have changed."
             )
 
-        # Loop through available carousel buttons
-        for i in range(len(buttons)):
-
-            # Click the current carousel button
-            # buttons[i].click()
-            driver.execute_script("arguments[0].click();", buttons[i])
-
-            # Time to load DOM
-            time.sleep(1)
-
-            # Extract vehicle models and prices using Selenium
-            model_elements = driver.find_elements(
-                By.XPATH, "//*[@class='fgx-brand-ds to-fade-in title-three ff-d']"
-            )
-            price_elements = driver.find_elements(By.XPATH, '//*[@class="price"]')
-
-            # Check if model or price elements are not found
-            if not model_elements or not price_elements:
-                raise Exception(
-                    "Model or price elements not found. Page structure may have changed."
-                )
-
-            for model, price in zip(model_elements, price_elements):
-                model_name = model.text.strip()
-                price_value = price.text.strip()
-                if model_name == "" or price_value == "":  # Ignore half captured data
-                    continue
-                vehicle_prices.append((model_name, price_value))
-
-        # Remove possible duplicates
-        vehicle_prices_sorted = list(dict.fromkeys(vehicle_prices).keys())
-        vehicle_prices = vehicle_prices_sorted
+        for model, price in zip(model_elements, price_elements):
+            model_name = model.text.strip()
+            price_value = price.text.strip()
+            if model_name == "" or price_value == "":
+                continue
+            vehicle_prices.append((model_name, price_value))
 
     except Exception as e:
         vehicle_prices = [("Ford.ca Error", str(e))]
@@ -107,28 +84,33 @@ def get_ford_dealer_mustang_mach_e_prices(url: str) -> List[Tuple[str, str]]:
     try:
         # Extract vehicle models and prices
         model_elements = driver.find_elements(
-            By.XPATH, "//*[contains(@class,'modelChecker')]"
-        )
-        price_elements = driver.find_elements(
-            By.XPATH, "//*[contains(@class,'priceChecker')]"
+            By.XPATH, "//div[contains(@class,'modelChecker')]/div/ul/li/a/span"
         )
 
-        # Check if model or price elements are not found
-        if not model_elements or not price_elements:
+        # Check if model elements are not found
+        if not model_elements:
             raise Exception(
-                "Model or price elements not found. Page structure may have changed."
+                "Model elements not found. Page structure may have changed."
             )
 
-        for model, price in zip(model_elements, price_elements):
-            model_name = model.text.strip()
-            price_value = price.text.strip()
-            if model_name == "" or price_value == "":  # Ignore half captured data
-                continue
-            vehicle_prices.append((model_name, price_value))
+        for model_element in model_elements:
+            try:
+                # Extract price
+                price_element = model_element.find_element(By.XPATH, ".//label")
+                price_value = price_element.text.strip()
 
-        # Remove possible duplicates
-        vehicle_prices_sorted = list(dict.fromkeys(vehicle_prices).keys())
-        vehicle_prices = vehicle_prices_sorted
+                # Extract model name
+                model_name = (
+                    model_element.text.replace(price_value, "")
+                    .replace("\n", " ")
+                    .strip()
+                )
+
+                if model_name and price_value:
+                    vehicle_prices.append((model_name, price_value))
+            except Exception as e:
+                # If there's an issue with extracting model name or price, skip this element
+                continue
 
     except Exception as e:
         vehicle_prices = [("Fordtodealers.ca Error", str(e))]
@@ -153,7 +135,7 @@ def get_ford_mfg_mustang_mach_e_hero_img(url: str) -> str:
     try:
         # Find the img tag using a more general XPath
         img_element = driver.find_element(
-            By.XPATH, '//*[@id="component01"]//picture/img'
+            By.XPATH, '//div[contains(@class,"billboard-img")]//picture/img'
         )
         img_src = img_element.get_attribute("src")
 
@@ -215,8 +197,16 @@ def get_ford_dealer_mustang_mach_e_hero_img(url: str) -> str:
 if __name__ == "__main__":
     print(get_ford_mfg_mustang_mach_e_prices(const["MUSTANG_MACH_E_MANUFACTURER_URL"]))
     print(get_ford_dealer_mustang_mach_e_prices(const["MUSTANG_MACH_E_DEALER_URL"]))
-    print(get_ford_mfg_mustang_mach_e_hero_img(const["MUSTANG_MACH_E_MANUFACTURER_IMAGE_URL"]))
-    print(get_ford_dealer_mustang_mach_e_hero_img(const["MUSTANG_MACH_E_DEALER_IMAGE_URL"]))
+    print(
+        get_ford_mfg_mustang_mach_e_hero_img(
+            const["MUSTANG_MACH_E_MANUFACTURER_IMAGE_URL"]
+        )
+    )
+    print(
+        get_ford_dealer_mustang_mach_e_hero_img(
+            const["MUSTANG_MACH_E_DEALER_IMAGE_URL"]
+        )
+    )
 
     driver = WebDriverSingleton.get_driver()
     driver.quit()
