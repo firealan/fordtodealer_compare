@@ -63,7 +63,7 @@ def get_ford_mfg_mustang_prices(url: str) -> List[Tuple[str, str]]:
 
             # Extract vehicle models and prices using Selenium
             model_elements = driver.find_elements(
-                By.XPATH, "//*[@class='fgx-brand-ds to-fade-in title-three ff-d']"
+                By.XPATH, "//*[@class='fgx-brand-ds to-fade-in generic-title-one ff-d']"
             )
             price_elements = driver.find_elements(By.XPATH, '//*[@class="price"]')
 
