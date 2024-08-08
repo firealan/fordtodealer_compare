@@ -76,5 +76,5 @@ class WebDriverSingleton:
         if headless_mode:
             firefox_options.add_argument("--headless")
         driver = webdriver.Firefox(service=firefox_service, options=firefox_options)
-        # driver.set_window_size(1024, 768)
+        driver.set_window_size(1920, 1080)
         return driver
