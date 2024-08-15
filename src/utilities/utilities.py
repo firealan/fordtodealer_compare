@@ -287,10 +287,10 @@ def send_dealer_email(
         {summary_df.to_html(classes="table", escape=False, index=False, formatters={"Comparison Result": redden})}
         <br>
         <h2><a id="nav_prices" name="nav_prices">NAVIGATION MENU PRICES</a></h2>
-        Data Sources:
+        Data Source URLs:
         <ul>
-          <li><a href="{const["MAIN_NAVIGATION_MENU_MANUFACTURER_URL"]}" target="_blank">{const["MAIN_NAVIGATION_MENU_MANUFACTURER_URL"]}</a></li>
-          <li><a href="{const["MAIN_NAVIGATION_MENU_DEALER_URL"]}" target="_blank">{const["MAIN_NAVIGATION_MENU_DEALER_URL"]}</a></li>
+          <li>Manufacturer: <a href="{const["MAIN_NAVIGATION_MENU_MANUFACTURER_URL"]}" target="_blank">{const["MAIN_NAVIGATION_MENU_MANUFACTURER_URL"]}</a></li>
+          <li>Dealer: <a href="{const["MAIN_NAVIGATION_MENU_DEALER_URL"]}" target="_blank">{const["MAIN_NAVIGATION_MENU_DEALER_URL"]}</a></li>
         </ul>
         {nav_prices_df.to_html(classes='table', escape=False, index=False, formatters={'Price Comparison': redden})}
         <br>
@@ -304,10 +304,10 @@ def send_dealer_email(
 
         html_content += f"""
         <h2><a id='{vehicle_id}' name='{vehicle_id}'>{vehicle_name} PRICES</a></h2>
-        Data Sources:
+        Data Source URLs:
         <ul>
-          <li><a href="{manufacturer_url}" target="_blank">{manufacturer_url}</a></li>
-          <li><a href="{dealer_url}" target="_blank">{dealer_url}</a></li>
+          <li>Manufacturer: <a href="{manufacturer_url}" target="_blank">{manufacturer_url}</a></li>
+          <li>Dealer: <a href="{dealer_url}" target="_blank">{dealer_url}</a></li>
         </ul>
         {vehicle_df.to_html(classes='table', escape=False, index=False, formatters={'Price Comparison': redden})}
         <br>
