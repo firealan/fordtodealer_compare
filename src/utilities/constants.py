@@ -74,7 +74,7 @@ constants = {
     "EXPEDITION_MANUFACTURER_IMAGE_URL": "https://www.ford.ca/suvs/expedition/?gnav=header-suvs-vhp",
     "EXPEDITION_DEALER_URL": "https://fordtodealers.ca/ford-expedition/",
     "EXPEDITION_DEALER_IMAGE_URL": "https://fordtodealers.ca/ford-expedition/",
-    "EXPLORER_SKIP_FLAG": False,
+    "EXPLORER_SKIP_FLAG": True,
     "EXPLORER_MANUFACTURER_URL": "https://www.ford.ca/suvs/explorer/2024/",
     "EXPLORER_MANUFACTURER_IMAGE_URL": "https://www.ford.ca/suvs/explorer/2024/",
     "EXPLORER_DEALER_URL": "https://fordtodealers.ca/2024-ford-explorer/",
