@@ -40,14 +40,12 @@ def get_ford_mfg_bronco_prices(url: str) -> List[Tuple[str, str]]:
     vehicle_prices = []
 
     try:
-        # Extract vehicle models and prices using Selenium
+        # Extract vehicle models and prices
         model_elements = driver.find_elements(
-            By.XPATH, "//a[@class='to-checkbox fgx-lnc-btm-brdr-hover']"
+            By.XPATH, "//*[@class='bri-txt generic-title-one ff-b']"
         )
-
         price_elements = driver.find_elements(
-            By.XPATH,
-            '//span[@class="make-info price bri-txt body-three ff-b"]//span[contains(@data-pricing-template, "{price}")]',
+            By.XPATH, '//*[@class="bri-txt body-one ff-b"]'
         )
 
         # Check if model or price elements are not found
@@ -59,13 +57,9 @@ def get_ford_mfg_bronco_prices(url: str) -> List[Tuple[str, str]]:
         for model, price in zip(model_elements, price_elements):
             model_name = model.text.strip()
             price_value = price.text.strip()
-            if model_name == "" or price_value == "":  # Ignore half captured data
+            if model_name == "" or price_value == "":
                 continue
             vehicle_prices.append((model_name, price_value))
-
-        # Remove possible duplicates
-        vehicle_prices_sorted = list(dict.fromkeys(vehicle_prices).keys())
-        vehicle_prices = vehicle_prices_sorted
 
     except Exception as e:
         vehicle_prices = [("Ford.ca Error", str(e))]
@@ -88,49 +82,31 @@ def get_ford_dealer_bronco_prices(url: str) -> List[Tuple[str, str]]:
     vehicle_prices = []
 
     try:
-        # Get all the buttons to scroll through the vehicle models
-        buttons = driver.find_elements(
-            By.XPATH, "(//div[@class='owl-dots'])[1]/button"
-        )  # Stop at the first div instance
+        # Extract vehicle models and prices
+        model_elements = driver.find_elements(
+            By.XPATH,
+            "//div[contains(@class,'modelChecker')]/div/ul/li/a/span",
+        )
 
-        if not buttons:
+        price_elements = driver.find_elements(
+            By.XPATH,
+            "//div[contains(@class,'modelChecker')]/div/ul/li/a/span/label",
+        )
+
+        # Check if model or price elements are not found
+        if not model_elements or not price_elements:
             raise Exception(
-                "Scrolling buttons not found. Page structure may have changed."
+                "Model or price elements not found. Page structure may have changed."
             )
 
-        # Loop through available carousel buttons
-        for i in range(len(buttons)):
-
-            # Click the current carousel button
-            buttons[i].click()
-
-            # Time to load DOM
-            time.sleep(1)
-
-            # Extract vehicle models and prices
-            model_elements = driver.find_elements(
-                By.XPATH, "//*[contains(@class,'modelChecker')]"
-            )
-            price_elements = driver.find_elements(
-                By.XPATH, "//*[contains(@class,'priceChecker')]"
-            )
-
-            # Check if model or price elements are not found
-            if not model_elements or not price_elements:
-                raise Exception(
-                    "Model or price elements not found. Page structure may have changed."
-                )
-
-            for model, price in zip(model_elements, price_elements):
-                model_name = model.text.strip()
-                price_value = price.text.strip()
-                if model_name == "" or price_value == "":  # Ignore half captured data
-                    continue
-                vehicle_prices.append((model_name, price_value))
-
-            # Remove possible duplicates
-            vehicle_prices_sorted = list(dict.fromkeys(vehicle_prices).keys())
-            vehicle_prices = vehicle_prices_sorted
+        for model, price in zip(model_elements, price_elements):
+            model_name = model.text.strip().split("\n")[
+                0
+            ]  # Strip everything after '\n'
+            price_value = price.text.strip()
+            if model_name == "" or price_value == "":
+                continue
+            vehicle_prices.append((model_name, price_value))
 
     except Exception as e:
         vehicle_prices = [("Fordtodealers.ca Error", str(e))]
@@ -155,7 +131,7 @@ def get_ford_mfg_bronco_hero_img(url: str) -> str:
     try:
         # Find the img tag using a more general XPath
         img_element = driver.find_element(
-            By.XPATH, '//*[@id="component01"]//picture/img'
+            By.XPATH, '//div[@class="billboard-img"]//picture/img'
         )
         img_src = img_element.get_attribute("src")
 

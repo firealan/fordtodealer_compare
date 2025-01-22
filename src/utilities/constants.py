@@ -15,7 +15,7 @@ constants = {
     # ----------------------------------------------------------------
     "NAVIGATION_SKIP_FLAG": False,
     "NAVIGATION_MODEL_LIST": [
-        "BRONCO SPORT",
+        "BRONCO",
         "EDGE",
         "ESCAPE",
         "EXPLORER",
@@ -29,11 +29,11 @@ constants = {
     # ----------------------------------------------------------------
     # Vehicle Configuration
     # ----------------------------------------------------------------
-    "BRONCO_SKIP_FLAG": True,
-    "BRONCO_MANUFACTURER_URL": "https://www.ford.ca/suvs/bronco/models/?gnav=vhpnav-specs",
-    "BRONCO_MANUFACTURER_IMAGE_URL": "https://www.ford.ca/suvs/bronco/?gnav=header-suvs-vhp",
-    "BRONCO_DEALER_URL": "https://fordtodealers.ca/ford-bronco/",
-    "BRONCO_DEALER_IMAGE_URL": "https://fordtodealers.ca/ford-bronco/",
+    "BRONCO_SKIP_FLAG": False,
+    "BRONCO_MANUFACTURER_URL": "https://www.ford.ca/suvs/bronco/?intcmp=vhp-seconNav-future",
+    "BRONCO_MANUFACTURER_IMAGE_URL": "https://www.ford.ca/suvs/bronco/?intcmp=vhp-seconNav-future",
+    "BRONCO_DEALER_URL": "https://fordtodealers.ca/2025-ford-bronco/",
+    "BRONCO_DEALER_IMAGE_URL": "https://fordtodealers.ca/2025-ford-bronco/",
     "BRONCO_SPORT_SKIP_FLAG": True,
     "BRONCO_SPORT_MANUFACTURER_URL": "https://www.ford.ca/suvs/bronco-sport/models/?gnav=vhpnav-specs",
     "BRONCO_SPORT_MANUFACTURER_IMAGE_URL": "https://www.ford.ca/suvs/bronco-sport/?gnav=vhpnav-overiew",
