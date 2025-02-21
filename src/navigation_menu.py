@@ -4,11 +4,17 @@ import pandas as pd
 from selenium.webdriver.common.by import By
 
 # Built-in Packages
+import logging
 import time
 from typing import List, Tuple
 import os
 import re
 import sys
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
 # Get the current script's directory
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -111,6 +117,9 @@ def get_ford_mfg_nav_prices(url: str) -> List[Tuple[str, str]]:
     except Exception as e:
         vehicle_prices = [("Ford.ca Error", str(e))]
 
+    # Debugging: Log the vehicle prices
+    logging.info("Ford Manufacturer Navigation Prices: %s", vehicle_prices)
+
     return vehicle_prices
 
 
@@ -187,6 +196,9 @@ def get_ford_dealer_nav_prices(url: str) -> List[Tuple[str, str, str]]:
     except Exception as e:
         vehicle_prices = [("Fordtodealers.ca Error", str(e))]
 
+    # Debugging: Log the vehicle prices
+    logging.info("Ford Dealer Navigation Prices: %s", vehicle_prices)
+
     return vehicle_prices
 
 
@@ -194,86 +206,102 @@ def get_ford_dealer_nav_prices(url: str) -> List[Tuple[str, str, str]]:
 # Create Model Prices data frame
 # ------------------------------------------
 def create_navigation_prices_df(mfr_url: str, dealer_url: str) -> pd.DataFrame:
+    try:
+        # Get Vehicle Data
+        ford_mfr_nav_prices = get_ford_mfg_nav_prices(mfr_url)
+        ford_dealer_nav_prices = get_ford_dealer_nav_prices(dealer_url)
 
-    # Get Vehicle Data
-    ford_mfr_nav_prices = get_ford_mfg_nav_prices(mfr_url)
-    ford_dealer_nav_prices = get_ford_dealer_nav_prices(dealer_url)
+        # Debugging: Print the data to check the structure
+        logging.info("Ford Manufacturer Navigation Prices: %s", ford_mfr_nav_prices)
+        logging.info("Ford Dealer Navigation Prices: %s", ford_dealer_nav_prices)
 
-    # Convert datasets to DataFrames
-    nav_mfr_prices_df = pd.DataFrame(
-        ford_mfr_nav_prices,
-        columns=["Category", "Car Model", "Ford Manufacturer Price"],
-    )
-    nav_dealer_prices_df = pd.DataFrame(
-        ford_dealer_nav_prices, columns=["Category", "Car Model", "Ford Dealer Price"]
-    )
+        # Convert datasets to DataFrames
+        nav_mfr_prices_df = pd.DataFrame(
+            ford_mfr_nav_prices,
+            columns=["Category", "Car Model", "Ford Manufacturer Price"],
+        )
+        nav_dealer_prices_df = pd.DataFrame(
+            ford_dealer_nav_prices,
+            columns=["Category", "Car Model", "Ford Dealer Price"],
+        )
 
-    # String Manipulation for matching - Change ford.ca text to upper
-    nav_mfr_prices_df["Car Model"] = nav_mfr_prices_df["Car Model"].str.upper()
+        # Debugging: Print the data frames to check the structure
+        logging.info("Manufacturer Prices DataFrame:\n%s", nav_mfr_prices_df)
+        logging.info("Dealer Prices DataFrame:\n%s", nav_dealer_prices_df)
 
-    # String Manipulation for matching - Remove ™ and ® from ford.ca
-    nav_mfr_prices_df["Car Model"] = nav_mfr_prices_df["Car Model"].replace(
-        {"™": "", "®": ""}, regex=True
-    )
+        # String Manipulation for matching - Change ford.ca text to upper
+        nav_mfr_prices_df["Car Model"] = nav_mfr_prices_df["Car Model"].str.upper()
 
-    # String Manipulation for matching - Remove ™ and ® from fordtodealers.ca
-    nav_dealer_prices_df["Car Model"] = nav_dealer_prices_df["Car Model"].replace(
-        {"™": "", "®": ""}, regex=True
-    )
+        # String Manipulation for matching - Remove ™ and ® from ford.ca
+        nav_mfr_prices_df["Car Model"] = nav_mfr_prices_df["Car Model"].replace(
+            {"™": "", "®": ""}, regex=True
+        )
 
-    # Add a temporary 'order' column to mfr_df
-    nav_mfr_prices_df["order"] = range(len(nav_mfr_prices_df))
+        # String Manipulation for matching - Remove ™ and ® from fordtodealers.ca
+        nav_dealer_prices_df["Car Model"] = nav_dealer_prices_df["Car Model"].replace(
+            {"™": "", "®": ""}, regex=True
+        )
 
-    # Merge datasets on 'Car Model'
-    merged_df = pd.merge(
-        nav_mfr_prices_df,
-        nav_dealer_prices_df,
-        on=["Category", "Car Model"],
-        how="outer",
-        suffixes=("_ford_mfr_vehicles", "_ford_dealer_vehicles"),
-    )
+        # Add a temporary 'order' column to mfr_df
+        nav_mfr_prices_df["order"] = range(len(nav_mfr_prices_df))
 
-    # Sort by the 'order' column and drop it
-    merged_df.sort_values("order", inplace=True)
-    merged_df.drop("order", axis=1, inplace=True)
+        # Merge datasets on 'Car Model'
+        merged_df = pd.merge(
+            nav_mfr_prices_df,
+            nav_dealer_prices_df,
+            on=["Category", "Car Model"],
+            how="outer",
+            suffixes=("_ford_mfr_vehicles", "_ford_dealer_vehicles"),
+        )
 
-    # Replace NaN values with $0
-    merged_df.fillna("$0", inplace=True)
+        # Debugging: Print the merged data frame to check the structure
+        logging.info("Merged DataFrame:\n%s", merged_df)
 
-    # Add a column for price difference
-    merged_df["Price Difference"] = pd.to_numeric(
-        merged_df["Ford Manufacturer Price"].replace("[\\$,]", "", regex=True),
-        errors="coerce",
-    ) - pd.to_numeric(
-        merged_df["Ford Dealer Price"].replace("[\\$,]", "", regex=True),
-        errors="coerce",
-    )
+        # Sort by the 'order' column and drop it
+        merged_df.sort_values("order", inplace=True)
+        merged_df.drop("order", axis=1, inplace=True)
 
-    # Format the "Price Difference" column as currency with negative sign before the dollar amount and no decimals
-    merged_df["Price Difference"] = merged_df["Price Difference"].apply(
-        lambda x: "${:,.0f}".format(x).replace("$-", "-$") if pd.notnull(x) else x
-    )
+        # Replace NaN values with $0
+        merged_df.fillna("$0", inplace=True)
 
-    # Add a column for price comparison
-    merged_df["Price Comparison"] = "Match"
-    merged_df.loc[
-        merged_df["Ford Manufacturer Price"] != merged_df["Ford Dealer Price"],
-        "Price Comparison",
-    ] = "Mismatch"
+        # Add a column for price difference
+        merged_df["Price Difference"] = pd.to_numeric(
+            merged_df["Ford Manufacturer Price"].replace("[\\$,]", "", regex=True),
+            errors="coerce",
+        ) - pd.to_numeric(
+            merged_df["Ford Dealer Price"].replace("[\\$,]", "", regex=True),
+            errors="coerce",
+        )
 
-    # Filter Navigation List by Car Model if needed - Reducing the list
-    if const.get("NAVIGATION_MODEL_LIST", []):
-        merged_df = merged_df[
-            merged_df["Car Model"].isin(const["NAVIGATION_MODEL_LIST"])
-        ]
+        # Format the "Price Difference" column as currency with negative sign before the dollar amount and no decimals
+        merged_df["Price Difference"] = merged_df["Price Difference"].apply(
+            lambda x: "${:,.0f}".format(x).replace("$-", "-$") if pd.notnull(x) else x
+        )
 
-    # Filter Navigation List by Car Category if needed - Reducing the list
-    if const.get("NAVIGATION_CATEGORY_LIST", []):
-        merged_df = merged_df[
-            ~merged_df["Category"].isin(const["NAVIGATION_CATEGORY_LIST"])
-        ]
+        # Add a column for price comparison
+        merged_df["Price Comparison"] = "Match"
+        merged_df.loc[
+            merged_df["Ford Manufacturer Price"] != merged_df["Ford Dealer Price"],
+            "Price Comparison",
+        ] = "Mismatch"
 
-    return merged_df
+        # Filter Navigation List by Car Model if needed - Reducing the list
+        if const.get("NAVIGATION_MODEL_LIST", []):
+            merged_df = merged_df[
+                merged_df["Car Model"].isin(const["NAVIGATION_MODEL_LIST"])
+            ]
+
+        # Filter Navigation List by Car Category if needed - Reducing the list
+        if const.get("NAVIGATION_CATEGORY_LIST", []):
+            merged_df = merged_df[
+                ~merged_df["Category"].isin(const["NAVIGATION_CATEGORY_LIST"])
+            ]
+
+        return merged_df
+
+    except Exception as e:
+        logging.error("An error occurred in create_navigation_prices_df: %s", str(e))
+        raise
 
 
 # Test Functions
