@@ -25,8 +25,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Set appropriate permissions
-RUN chown -R pyuser:pyuser /app/main.py && \
-    chmod +x /app/main.py
+RUN chown -R pyuser:pyuser /app && \
+    chmod -R u+w /app
 
 # Switch to the non-root user
 USER pyuser

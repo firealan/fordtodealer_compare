@@ -7,6 +7,7 @@ from pandas.io.formats.style import Styler
 # Built-in Packages
 import datetime
 import logging
+from logging.handlers import RotatingFileHandler
 import time
 from typing import Callable
 import sys
@@ -65,6 +66,18 @@ vehicles_list_html = []
 all_model_images_df = pd.DataFrame()
 
 
+# Configure logging
+log_file = "application.log"
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    handlers=[
+        RotatingFileHandler(log_file, maxBytes=5 * 1024 * 1024, backupCount=3),  # 5MB per file, 3 backups
+        logging.StreamHandler()  # Log to console
+    ]
+)
+
+
 # Process Vehicle data
 def get_vehicle_data(
     vehicle_name: str,
@@ -82,50 +95,59 @@ def get_vehicle_data(
     global all_model_images_df
 
     if vehicle_skip_flag == False:
-        print(f"{vehicle_name} pricing scraping started...")
+        logging.info(f"{vehicle_name} pricing scraping started...")
 
         func_start_time = start_timer()
 
-        # Capture Prices
-        vehicle_prices_df = create_vehicle_prices_df(
-            mfg_prices_func, dealer_prices_func, mfg_price_url, dealer_price_url
-        )
+        try:
+          # Capture Prices
+          vehicle_prices_df = create_vehicle_prices_df(
+              mfg_prices_func, dealer_prices_func, mfg_price_url, dealer_price_url
+          )
+          logging.info(f"{vehicle_name} pricing data shape: {vehicle_prices_df.shape}")
+          logging.debug(f"{vehicle_name} pricing data preview:\n{vehicle_prices_df.head()}")
 
-        print(f"{vehicle_name} pricing scraping completed.")
+          logging.info(f"{vehicle_name} pricing scraping completed.")
 
-        if vehicle_image_skip_flag == False:
+          if vehicle_image_skip_flag == False:
 
-            print(f"{vehicle_name} image scraping started...")
+              logging.info(f"{vehicle_name} image scraping started...")
 
-            # Capture Hero Images
-            vehicle_image_df = create_vehicle_image_df(
-                mfg_image_func,
-                dealer_image_func,
-                vehicle_name,
-                mfg_image_url,
-                dealer_image_url,
-            )
+              # Capture Hero Images
+              vehicle_image_df = create_vehicle_image_df(
+                  mfg_image_func,
+                  dealer_image_func,
+                  vehicle_name,
+                  mfg_image_url,
+                  dealer_image_url,
+              )
+              logging.info(f"{vehicle_name} image data shape: {vehicle_image_df.shape}")
+              logging.debug(f"{vehicle_name} image data preview:\n{vehicle_image_df.head()}")
 
-            # Append Images to single data frame
-            all_model_images_df = pd.concat(
-                [all_model_images_df, vehicle_image_df], ignore_index=True
-            )
+              # Append Images to single data frame
+              all_model_images_df = pd.concat(
+                  [all_model_images_df, vehicle_image_df], ignore_index=True
+              )
 
-            print(f"{vehicle_name} image scraping completed.")
+              logging.info(f"{vehicle_name} image scraping completed.")
 
-        # Append Prices to single list
-        vehicles_list_html.append(
-            (vehicle_name, vehicle_prices_df, mfg_image_url, dealer_image_url)
-        )
+          # Append Prices to single list
+          vehicles_list_html.append(
+              (vehicle_name, vehicle_prices_df, mfg_image_url, dealer_image_url)
+          )
 
-        print_elapsed_time(
-            func_start_time,
-            f"{vehicle_name} pricing {'and image ' if not vehicle_image_skip_flag else ''}scraping completed time",
-        )
-        print_elapsed_time(start_time, "Elapased Time")
-        print()
+          print_elapsed_time(
+              func_start_time,
+              f"{vehicle_name} pricing {'and image ' if not vehicle_image_skip_flag else ''}scraping completed time",
+          )
+          print_elapsed_time(start_time, "Elapased Time")
+          logging.info(f"{vehicle_name} processing completed successfully.")
+
+        except Exception as e:
+          logging.error(f"Error processing {vehicle_name}: {e}", exc_info=True)
+
     else:
-        print(
+        logging.info(
             f"{vehicle_name} SKIP FLAG is set to 'true'. Skipping {vehicle_name} pricing."
         )
         print()
@@ -133,12 +155,16 @@ def get_vehicle_data(
 
 def main():
     try:
+        logging.info("Application started.")
+        
         # ---------------------------------
         # Get Navigation Data
         # ---------------------------------
 
         if const["NAVIGATION_SKIP_FLAG"] == False:
-            print("Navigation pricing started...")
+            
+            logging.info("Navigation pricing started...")
+            
             func_start_time = start_timer()
 
             # Capture Prices
@@ -147,16 +173,21 @@ def main():
                 const["MAIN_NAVIGATION_MENU_DEALER_URL"],
             )
 
+            logging.info("Navigation pricing completed.")
+            logging.info(f"Navigation data shape: {nav_prices_df.shape}")
+
             print_elapsed_time(func_start_time, "Navigation pricing completed time")
             print_elapsed_time(start_time, "Elapased Time")
             print("")
         else:
-            print("NAVIGATION SKIP FLAG is set to 'true'. Skipping NAVIGATION pricing.")
+            logging.info("NAVIGATION SKIP FLAG is set to 'true'. Skipping NAVIGATION pricing.")
             print("")
 
         # ---------------------------------
         # Get vehicle data
         # ---------------------------------
+
+        logging.info("Vehicle data processing started.")
 
         get_vehicle_data(
             "BRONCO®",
@@ -522,8 +553,13 @@ def main():
             const["TRANSIT_CONNECT_COMMERCIAL_DEALER_IMAGE_URL"],
         )
 
+        logging.info("Vehicle data processing completed.")
+
         # Email the data
         if const["EMAIL_SKIP_FLAG"] == False:
+            
+            logging.info("Sending email with vehicle data...")
+            
             send_dealer_email(
                 sender_email,
                 receiver_email,
@@ -537,8 +573,11 @@ def main():
                 all_model_images_df,
                 nav_prices_df,
             )
+
+            logging.info("Email sent successfully.")
+
         else:
-            print("EMAIL SKIP FLAG is set to 'true'. Email not sent.")
+            logging.info("EMAIL SKIP FLAG is set to 'true'. Email not sent.")
             print()
 
         # Record the end time
@@ -555,6 +594,8 @@ def main():
         print(
             f"Script execution time: {int(hours)} hours, {int(minutes)} minutes, {seconds:.2f} seconds"
         )
+
+        logging.info("Application completed successfully.")
 
     except Exception as e:
         exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -575,7 +616,7 @@ def main():
             error_message,
         )
 
-        print(
+        logging.info(
             f"Script encountered an error. Please check the logs for more information."
         )
 
@@ -585,7 +626,7 @@ def main():
         driver = WebDriverSingleton.get_driver()
         if driver is not None:
             driver.quit()
-            print("WebDriver closed successfully.")
+            logging.info("WebDriver closed successfully.")
 
 
 if __name__ == "__main__":
