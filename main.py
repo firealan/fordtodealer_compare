@@ -150,7 +150,6 @@ def get_vehicle_data(
         logging.info(
             f"{vehicle_name} SKIP FLAG is set to 'true'. Skipping {vehicle_name} pricing."
         )
-        print()
 
 
 def main():
@@ -178,10 +177,8 @@ def main():
 
             print_elapsed_time(func_start_time, "Navigation pricing completed time")
             print_elapsed_time(start_time, "Elapased Time")
-            print("")
         else:
             logging.info("NAVIGATION SKIP FLAG is set to 'true'. Skipping NAVIGATION pricing.")
-            print("")
 
         # ---------------------------------
         # Get vehicle data
