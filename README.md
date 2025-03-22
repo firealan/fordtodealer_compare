@@ -154,6 +154,44 @@ docker pull neallyboy/ford-web-scrapper
 
 This will pull the latest version from Docker Hub from the `neallyboy` repo.
 
+
+6. **Verify docker image architecture**
+
+```
+docker image inspect neallyboy/ford-web-scrapper --format '{{.Os}}/{{.Architecture}}'
+```
+
+In some cases, depending on how you build the image, can affect the image architecture.
+
+The default architecture types for Docker images, if not explicitly specified during the build process, are as follows:
+
+- **Windows**: `windows/amd64`
+- **Linux**: `linux/amd64`
+- **Mac (Intel-based)**: `linux/amd64`
+- **Mac (Apple Silicon/M1/M2)**: `linux/arm64`
+
+Docker automatically detects the host system's architecture and builds the image accordingly unless overridden using the `--platform` flag during the build process. For example:
+
+```
+docker build --platform linux/arm64 -t neallyboy/ford-web-scrapper .
+```
+
+## Building Docker Images - docker build vs docker buildx
+
+Using `docker buildx` allows you to build multi-platform Docker images, which is particularly useful when you want to target architectures other than the one your host system is running on. The key difference between `docker build` and `docker buildx` is that `buildx` provides extended functionality, such as:
+
+- **Multi-platform builds**: Build images for multiple architectures (e.g., `linux/amd64`, `linux/arm64`) in a single command.
+- **Cross-compilation**: Build images for architectures different from your host system without needing emulation or a physical machine for that architecture.
+- **Advanced caching**: Better caching mechanisms for faster builds.
+
+### Example Command Using `buildx`
+
+Here’s how you can use `docker buildx` to build your image for a specific platform:
+
+```
+docker buildx build --platform linux/arm64 -t neallyboy/ford-web-scrapper .
+```
+
 ## Azure Cloud Instances - Optional
 
 Azure Cloud Instances (ACI) allows you to create simple containers that are responsible. In this case, we would like to run the container on a schedule, and only have the container live for the life of the script.

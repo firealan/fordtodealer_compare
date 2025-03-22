@@ -16,7 +16,6 @@ constants = {
     "NAVIGATION_SKIP_FLAG": False,
     "NAVIGATION_MODEL_LIST": [
         "BRONCO",
-        "EDGE",
         "ESCAPE",
         "EXPLORER",
         "F-150",
@@ -59,7 +58,7 @@ constants = {
     "E_SERIES_STRIPPED_CHASSIS_MANUFACTURER_IMAGE_URL": "https://www.ford.ca/commercial-trucks/e-series-stripped-chassis/?gnav=header-commercial-vhp",
     "E_SERIES_STRIPPED_CHASSIS_DEALER_URL": "https://fordtodealers.ca/ford-e-series-stripped-chasis/",
     "E_SERIES_STRIPPED_CHASSIS_DEALER_IMAGE_URL": "https://fordtodealers.ca/ford-e-series-stripped-chasis/",
-    "EDGE_SKIP_FLAG": False,
+    "EDGE_SKIP_FLAG": True,
     "EDGE_MANUFACTURER_URL": "https://www.ford.ca/suvs-crossovers/edge/?gnav=header-suvs-vhp",
     "EDGE_MANUFACTURER_IMAGE_URL": "https://www.ford.ca/suvs-crossovers/edge/?gnav=header-suvs-vhp",
     "EDGE_DEALER_URL": "https://fordtodealers.ca/ford-edge/",
