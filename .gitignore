@@ -1,8 +1,5 @@
 # .gitignore
-.env
-.env.example
-.env.local
-.env.staging
+.env.*
 
 # Python-specific
 __pycache__/
