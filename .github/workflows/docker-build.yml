@@ -22,7 +22,7 @@ jobs:
       - name: Build and Push Docker Image
         run: |
           SHORT_SHA=$(echo $GITHUB_SHA | cut -c1-7)
-          docker build \
+          docker buildx build \
             -t neallyboy/ford-web-scrapper:latest \
             -t neallyboy/ford-web-scrapper:$SHORT_SHA \
             --push .
