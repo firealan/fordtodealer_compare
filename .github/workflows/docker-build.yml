@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
       - name: Checkout Code
@@ -23,6 +23,7 @@ jobs:
         run: |
           SHORT_SHA=$(echo $GITHUB_SHA | cut -c1-7)
           docker buildx build \
+            --build-arg BASE_IMAGE=python:3.11.8-slim-bullseye \
             -t neallyboy/ford-web-scrapper:latest \
             -t neallyboy/ford-web-scrapper:$SHORT_SHA \
             --push .
