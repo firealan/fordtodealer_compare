@@ -147,7 +147,7 @@ def get_ford_dealer_nav_prices(url: str) -> List[Tuple[str, str, str]]:
         # Get all the Sub menu buttons
         sub_menu_buttons = driver.find_elements(
             By.XPATH,
-            "//li[contains(@class,'mega-menu-item mega-menu-item-type-custom mega-menu-item-object-custom mega-menu-item-has-children mega-menu-megamenu mega-menu-item')]//a[@class='mega-menu-link sf-with-ul']",
+            "//li[contains(@class,'mega-menu-item mega-menu-item-type-custom mega-menu-item-object-custom mega-menu-item-has-children mega-menu-megamenu mega-menu-grid')]//a[@class='mega-menu-link sf-with-ul']",
         )
 
         if not sub_menu_buttons:
@@ -168,11 +168,11 @@ def get_ford_dealer_nav_prices(url: str) -> List[Tuple[str, str, str]]:
             # Get the vehicle names and prices
             sub_menu_all_vehicles_names = driver.find_elements(
                 By.XPATH,
-                "//li[starts-with(@class, 'mega-menu-item mega-menu-item-type-custom mega-menu-item-object-custom mega-menu-item-has-children mega-menu-megamenu mega-menu-item') and contains(@class,'mega-toggle-on')]//li[contains(@class,'mega-menu-column') and not(contains(@class, 'hide'))]//p[@class='vehicle-top']//span[contains(@class,'vehicle-name')]/a[1]",
+                "//li[starts-with(@class, 'mega-menu-item mega-menu-item-type-custom mega-menu-item-object-custom mega-menu-item-has-children mega-menu-megamenu mega-menu-grid') and contains(@class,'mega-toggle-on')]//li[contains(@class,'mega-menu-column') and not(contains(@class, 'hide'))]//p[@class='vehicle-top']//span[contains(@class,'vehicle-name')]/a[1]",
             )
             sub_menu_all_vehicles_prices = driver.find_elements(
                 By.XPATH,
-                "//li[starts-with(@class, 'mega-menu-item mega-menu-item-type-custom mega-menu-item-object-custom mega-menu-item-has-children mega-menu-megamenu mega-menu-item') and contains(@class,'mega-toggle-on')]//li[contains(@class,'mega-menu-column') and not(contains(@class, 'hide'))]//p[@class='vehicle-bottom']//span[@class='vprice']/span[1]",
+                "//li[starts-with(@class, 'mega-menu-item mega-menu-item-type-custom mega-menu-item-object-custom mega-menu-item-has-children mega-menu-megamenu mega-menu-grid') and contains(@class,'mega-toggle-on')]//li[contains(@class,'mega-menu-column') and not(contains(@class, 'hide'))]//p[@class='vehicle-bottom']//span[@class='vprice']/span[1]",
             )
 
             # For element, get the name and price
