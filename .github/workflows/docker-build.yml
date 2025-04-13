@@ -1,0 +1,27 @@
+name: Build and Push Docker Image
+
+on:
+  push:
+    branches:
+      - main # Trigger the workflow on pushes to the main branch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Log in to Docker Hub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build and Push Docker Image
+        run: |
+          docker buildx build --platform linux/amd64 \
+            -t neallyboy/ford-web-scrapper:latest \
+            -t neallyboy/ford-web-scrapper:${{ github.sha }} \
+            --push .
