@@ -21,7 +21,7 @@ jobs:
 
       - name: Build and Push Docker Image
         run: |
-          docker buildx build --platform linux/amd64 \
+          docker build build \
             -t neallyboy/ford-web-scrapper:latest \
-            -t neallyboy/ford-web-scrapper:${{ github.sha }} \
+            -t neallyboy/ford-web-scrapper:${{ github.sha::0:7 }} \
             --push .
