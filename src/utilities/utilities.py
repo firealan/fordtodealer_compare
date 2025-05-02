@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import pandas as pd
+import logging
 
 # Built-in Packages
 from datetime import datetime
@@ -57,10 +58,44 @@ def create_vehicle_prices_df(
     mfr_price_url: str,
     dealer_price_url: str,
 ) -> pd.DataFrame:
+    max_retries = 3
+    retry_delay = 2  # seconds
 
-    # Get Vehicle Prices
-    vehicle_mfr_prices = price_func_mfr(mfr_price_url)
-    vehicle_dealer_prices = price_func_dealer(dealer_price_url)
+    # Get Vehicle Prices with retry mechanism
+    for attempt in range(max_retries):
+        try:
+            # Get Vehicle Prices
+            vehicle_mfr_prices = price_func_mfr(mfr_price_url)
+            break
+        except Exception as e:
+            if attempt < max_retries - 1:
+                logging.warning(
+                    f"Error getting manufacturer prices (attempt {attempt+1}/{max_retries}): {e}"
+                )
+                time.sleep(retry_delay)
+                logging.info("Retrying...")
+            else:
+                logging.error(
+                    f"Failed to get manufacturer prices after {max_retries} attempts: {e}"
+                )
+                raise
+
+    for attempt in range(max_retries):
+        try:
+            vehicle_dealer_prices = price_func_dealer(dealer_price_url)
+            break
+        except Exception as e:
+            if attempt < max_retries - 1:
+                logging.warning(
+                    f"Error getting dealer prices (attempt {attempt+1}/{max_retries}): {e}"
+                )
+                time.sleep(retry_delay)
+                logging.info("Retrying...")
+            else:
+                logging.error(
+                    f"Failed to get dealer prices after {max_retries} attempts: {e}"
+                )
+                raise
 
     # Convert datasets to DataFrames
     vehicle_mfr_prices_df = pd.DataFrame(
@@ -137,12 +172,43 @@ def create_vehicle_image_df(
     mfr_image_url: str,
     dealer_image_url: str,
 ) -> pd.DataFrame:
+    max_retries = 3
+    retry_delay = 2  # seconds
 
-    # Get Vehicle Images
-    vehicle_mfr_hero_image = hero_image_func_mfr(mfr_image_url)
-    vehicle_dealer_hero_image = hero_image_func_dealer(dealer_image_url)
+    # Get Vehicle Images with retry mechanism
+    for attempt in range(max_retries):
+        try:
+            vehicle_mfr_hero_image = hero_image_func_mfr(mfr_image_url)
+            break
+        except Exception as e:
+            if attempt < max_retries - 1:
+                logging.warning(
+                    f"Error getting manufacturer hero image (attempt {attempt+1}/{max_retries}): {e}"
+                )
+                time.sleep(retry_delay)
+                logging.info("Retrying...")
+            else:
+                logging.error(
+                    f"Failed to get manufacturer hero image after {max_retries} attempts: {e}"
+                )
+                raise
 
-    # Embed hyperlinks in the image URLs
+    for attempt in range(max_retries):
+        try:
+            vehicle_dealer_hero_image = hero_image_func_dealer(dealer_image_url)
+            break
+        except Exception as e:
+            if attempt < max_retries - 1:
+                logging.warning(
+                    f"Error getting dealer hero image (attempt {attempt+1}/{max_retries}): {e}"
+                )
+                time.sleep(retry_delay)
+                logging.info("Retrying...")
+            else:
+                logging.error(
+                    f"Failed to get dealer hero image after {max_retries} attempts: {e}"
+                )
+                raise
 
     # Convert datasets to DataFrames
     hero_image_df = pd.DataFrame(
