@@ -63,7 +63,7 @@ constants = {
     "EDGE_MANUFACTURER_IMAGE_URL": "https://www.ford.ca/suvs-crossovers/edge/?gnav=header-suvs-vhp",
     "EDGE_DEALER_URL": "https://fordtodealers.ca/ford-edge/",
     "EDGE_DEALER_IMAGE_URL": "https://fordtodealers.ca/ford-edge/",
-    "ESCAPE_SKIP_FLAG": False,
+    "ESCAPE_SKIP_FLAG": True,
     "ESCAPE_MANUFACTURER_URL": "https://www.ford.ca/suvs-crossovers/escape/",
     "ESCAPE_MANUFACTURER_IMAGE_URL": "https://www.ford.ca/suvs-crossovers/escape/",
     "ESCAPE_DEALER_URL": "https://fordtodealers.ca/2025-ford-escape/",
