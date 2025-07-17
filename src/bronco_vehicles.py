@@ -41,11 +41,10 @@ def get_ford_mfg_bronco_prices(url: str) -> List[Tuple[str, str]]:
 
     try:
         # Extract vehicle models and prices
-        model_elements = driver.find_elements(
-            By.XPATH, "//*[@class='bri-txt generic-title-one ff-b']"
-        )
+        model_elements = driver.find_elements(By.XPATH, "//*[@class='modelName']")
         price_elements = driver.find_elements(
-            By.XPATH, '//*[@class="bri-txt body-one ff-b"]'
+            By.XPATH,
+            '//div[@class="modelDetails matchItem"]//p[@class="modelPrice"]//span[@data-pricing-trimmsrp]//p',
         )
 
         # Check if model or price elements are not found
@@ -55,8 +54,9 @@ def get_ford_mfg_bronco_prices(url: str) -> List[Tuple[str, str]]:
             )
 
         for model, price in zip(model_elements, price_elements):
-            model_name = model.text.strip()
+            model_name = model.text.strip().replace("Bronco® ", "")
             price_value = price.text.strip()
+            price_value = price_value.replace("Starting at ", "").rstrip(" 1")
             if model_name == "" or price_value == "":
                 continue
             vehicle_prices.append((model_name, price_value))
@@ -131,7 +131,7 @@ def get_ford_mfg_bronco_hero_img(url: str) -> str:
     try:
         # Find the img tag using a more general XPath
         img_element = driver.find_element(
-            By.XPATH, '//div[@class="billboard-img"]//picture/img'
+            By.XPATH, '//div[@class="image "]//picture/img'
         )
         img_src = img_element.get_attribute("src")
 
